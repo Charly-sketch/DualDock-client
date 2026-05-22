@@ -235,6 +235,7 @@ public class Controller extends Base
             
             setupSettingsWindowsAnimations();
             getDashboardPane().getSettingsButton().setOnAction(event -> openSettingsAnimation.play());
+            getDashboardPane().getLeftSidebarButton().setOnAction(event -> hardwareKVMswitch());
             getSettingsPane().getCloseButton().setOnAction(event -> closeSettingsAnimation.play());
 
             setClientProfiles(new ClientProfiles(new File(getConfig().getProfilesPath()), getConfig().getStartupProfileID()));
@@ -324,6 +325,12 @@ public class Controller extends Base
                 e.printStackTrace();
             }
         }
+    }
+
+    private void hardwareKVMswitch()
+    {
+        // TODO: ajoute ici le code pour activer le KVM ou exécuter ton action matérielle.
+        System.out.println("hardwareKVMswitch appelé");
     }
 
     @Override

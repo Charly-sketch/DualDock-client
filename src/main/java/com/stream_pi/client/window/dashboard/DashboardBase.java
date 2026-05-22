@@ -40,6 +40,7 @@ public class DashboardBase extends AnchorPane
 
     private ActionGridPane actionGridPane;
     private Button settingsButton;
+    private Button leftSidebarButton;
 
     public DashboardBase(ExceptionAndAlertHandler exceptionAndAlertHandler, ClientListener clientListener)
     {
@@ -48,8 +49,17 @@ public class DashboardBase extends AnchorPane
         actionGridPane = new ActionGridPane(exceptionAndAlertHandler, clientListener);
         AnchorPane.setTopAnchor(actionGridPane, 0.0);
         AnchorPane.setBottomAnchor(actionGridPane, 0.0);
-        AnchorPane.setLeftAnchor(actionGridPane, 0.0);
+        AnchorPane.setLeftAnchor(actionGridPane, 60.0);
         AnchorPane.setRightAnchor(actionGridPane, 0.0);
+
+        leftSidebarButton = new Button("Switch");
+        leftSidebarButton.getStyleClass().addAll("dashboard_sidebar_button");
+        leftSidebarButton.setPrefWidth(60.0);
+        leftSidebarButton.setMinWidth(60.0);
+        leftSidebarButton.setMaxWidth(60.0);
+        AnchorPane.setTopAnchor(leftSidebarButton, 5.0);
+        AnchorPane.setBottomAnchor(leftSidebarButton, 5.0);
+        AnchorPane.setLeftAnchor(leftSidebarButton, 5.0);
 
         FontIcon fontIcon = new FontIcon("fas-cog");
         fontIcon.getStyleClass().addAll("dashboard_settings_button_icon");
@@ -76,7 +86,7 @@ public class DashboardBase extends AnchorPane
             modifySettingsButtonToPreventOverlappingScrollBars();
         }
 
-        getChildren().addAll(actionGridPane,settingsButton);
+        getChildren().addAll(actionGridPane, settingsButton, leftSidebarButton);
 
         getStyleClass().add("dashboard");
 
@@ -144,5 +154,9 @@ public class DashboardBase extends AnchorPane
 
     public Button getSettingsButton() {
         return settingsButton;
+    }
+
+    public Button getLeftSidebarButton() {
+        return leftSidebarButton;
     }
 }
