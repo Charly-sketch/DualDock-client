@@ -329,13 +329,44 @@ public class Controller extends Base
 
     private void hardwareKVMswitch()
     {
-        // TODO: ajoute ici le code pour activer le KVM ou exécuter ton action matérielle.
+        try
+        {
+            System.out.println("Executing hardware KVM switch script...");
+
+            ProcessBuilder pb = new ProcessBuilder(
+                "python3",
+                "/home/admin/led.py"
+            );
+
+            pb.redirectErrorStream(true);
+
+            Process process = pb.start();
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream())))
+            {
+                String line;
+                while ((line = reader.readLine()) != null)
+                {
+                    System.out.println("PYTHON: " + line);
+                }
+            }
+
+            int exitCode = process.waitFor();
+            System.out.println("Script exécuté avec code : " + exitCode);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         System.out.println("hardwareKVMswitch appelé");
     }
 
     @Override
     public synchronized void setupClientConnection()
     {
+        System.out.println("setupClientConnection appelé");
         setupClientConnection(null);
     }
 
