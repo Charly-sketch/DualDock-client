@@ -60,7 +60,9 @@ public class GeneralTab extends VBox
     private HostServices hostServices;
 
     private TextField serverPortTextField;
+    private TextField serverPort2TextField;
     private TextField serverHostNameOrIPTextField;
+    private TextField serverHostNameOrIP2TextField;
 
     private TextField screenTimeoutTextField;
 
@@ -126,10 +128,12 @@ public class GeneralTab extends VBox
         logger = Logger.getLogger("");
 
         serverPortTextField = new TextField();
+        serverPort2TextField = new TextField();
         screenTimeoutTextField = new TextField();
 
 
         serverHostNameOrIPTextField = new TextField();
+        serverHostNameOrIP2TextField = new TextField();
         nameTextField = new TextField();
 
         clientProfileComboBox = new StreamPiComboBox<>();
@@ -263,7 +267,9 @@ public class GeneralTab extends VBox
         VBox vBox = new VBox(
                 generateSubHeading(I18N.getString("window.settings.GeneralTab.connection")),
                 new HBoxInputBox(I18N.getString("serverHostNameOrIP"), serverHostNameOrIPTextField, prefWidth),
+                new HBoxInputBox(I18N.getString("window.settings.GeneralTab.secondaryServerHostNameOrIP"), serverHostNameOrIP2TextField, prefWidth),
                 new HBoxInputBox(I18N.getString("serverPort"), serverPortTextField, prefWidth),
+                new HBoxInputBox(I18N.getString("window.settings.GeneralTab.secondaryServerPort"), serverPort2TextField, prefWidth),
                 generateSubHeading(I18N.getString("window.settings.GeneralTab.client")),
                 new HBoxInputBox(I18N.getString("name"), nameTextField, prefWidth),
                 new HBoxWithSpaceBetween(I18N.getString("window.settings.GeneralTab.currentProfile"), clientProfileComboBox),
@@ -465,6 +471,35 @@ public class GeneralTab extends VBox
             errors.append("* ").append(I18N.getString("serverPortMustBeInteger")).append("\n");
         }
 
+        String secondaryHost = serverHostNameOrIP2TextField.getText();
+        String secondaryPortText = serverPort2TextField.getText();
+
+        if(!secondaryHost.isBlank() || !secondaryPortText.isBlank())
+        {
+            if(secondaryHost.isBlank())
+            {
+                errors.append("* ").append(I18N.getString("window.settings.GeneralTab.secondaryServerHostNameOrIPCannotBeBlank")).append("\n");
+            }
+
+            try
+            {
+                int port2 = Integer.parseInt(secondaryPortText);
+
+                if(port2 < 1024 && !RootChecker.isRoot(ClientInfo.getInstance().getPlatform()))
+                {
+                    errors.append("* ").append(I18N.getString("serverPortMustBeGreaterThan1024")).append("\n");
+                }
+                else if(port2 > 65535)
+                {
+                    errors.append("* ").append(I18N.getString("serverPortMustBeLesserThan65535")).append("\n");
+                }
+            }
+            catch (NumberFormatException exception)
+            {
+                errors.append("* ").append(I18N.getString("serverPortMustBeInteger")).append("\n");
+            }
+        }
+
         if(serverHostNameOrIPTextField.getText().isBlank())
         {
             errors.append("* ").append(I18N.getString("serverHostNameOrIPCannotBeBlank")).append("\n");
@@ -521,7 +556,9 @@ public class GeneralTab extends VBox
         nameTextField.setText(config.getClientName());
 
         serverHostNameOrIPTextField.setText(config.getSavedServerHostNameOrIP());
+        serverHostNameOrIP2TextField.setText(config.getSavedServerHostNameOrIP2());
         serverPortTextField.setText(config.getSavedServerPort()+"");
+        serverPort2TextField.setText(config.getSavedServerPort2() > 0 ? config.getSavedServerPort2()+"" : "");
 
         screenTimeoutTextField.setText(config.getScreenSaverTimeout()+"");
         screenSaverToggleSwitch.setSelected(config.isScreenSaverEnabled());
@@ -642,6 +679,21 @@ public class GeneralTab extends VBox
 
             config.setServerPort(port);
             config.setServerHostNameOrIP(serverHostNameOrIPTextField.getText());
+
+            int port2 = -1;
+            String port2Text = serverPort2TextField.getText();
+            if(!port2Text.isBlank())
+            {
+                port2 = Integer.parseInt(port2Text);
+            }
+
+            if(port2 != config.getSavedServerPort2() || !serverHostNameOrIP2TextField.getText().equals(config.getSavedServerHostNameOrIP2()))
+            {
+                syncWithServer = true;
+            }
+
+            config.setServerHostNameOrIP2(serverHostNameOrIP2TextField.getText());
+            config.setServerPort2(port2);
 
             boolean isFullScreen = fullScreenModeToggleSwitch.isSelected();
 

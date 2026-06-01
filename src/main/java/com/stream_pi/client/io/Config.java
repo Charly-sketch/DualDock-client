@@ -270,6 +270,18 @@ public class Config
         return (Element) document.getElementsByTagName("comms-server").item(0);
     }
 
+    private Element getOrCreateChildElement(Element parent, String elementName)
+    {
+        if (XMLConfigHelper.doesElementExist(parent, elementName))
+        {
+            return (Element) parent.getElementsByTagName(elementName).item(0);
+        }
+
+        Element newElement = document.createElement(elementName);
+        parent.appendChild(newElement);
+        return newElement;
+    }
+
     public String getDefaultSavedServerHostNameOrIP()
     {
         return "127.0.0.1";
@@ -280,10 +292,24 @@ public class Config
         return -1;
     }
 
+    public int getDefaultSavedServerPort2()
+    {
+        return -1;
+    }
 
     public String getSavedServerHostNameOrIP()
     {
         return XMLConfigHelper.getStringProperty(getCommsServerElement(), "hostname-ip", getDefaultSavedServerHostNameOrIP(), false, true, document, configFile);
+    }
+
+    public String getDefaultSavedServerHostNameOrIP2()
+    {
+        return "";
+    }
+
+    public String getSavedServerHostNameOrIP2()
+    {
+        return XMLConfigHelper.getStringProperty(getCommsServerElement(), "hostname-ip-2", getDefaultSavedServerHostNameOrIP2(), false, true, document, configFile);
     }
 
     public int getSavedServerPort()
@@ -291,14 +317,29 @@ public class Config
         return XMLConfigHelper.getIntProperty(getCommsServerElement(), "port", getDefaultSavedServerPort(), false, true, document, configFile);
     }
 
+    public int getSavedServerPort2()
+    {
+        return XMLConfigHelper.getIntProperty(getCommsServerElement(), "port-2", getDefaultSavedServerPort2(), false, true, document, configFile);
+    }
+
     public void setServerHostNameOrIP(String hostNameOrIP)
     {
-        getCommsServerElement().getElementsByTagName("hostname-ip").item(0).setTextContent(hostNameOrIP);
+        getOrCreateChildElement(getCommsServerElement(), "hostname-ip").setTextContent(hostNameOrIP);
+    }
+
+    public void setServerHostNameOrIP2(String hostNameOrIP)
+    {
+        getOrCreateChildElement(getCommsServerElement(), "hostname-ip-2").setTextContent(hostNameOrIP);
+    }
+
+    public void setServerPort2(int port)
+    {
+        getOrCreateChildElement(getCommsServerElement(), "port-2").setTextContent(port+"");
     }
 
     public void setServerPort(int port)
     {
-        getCommsServerElement().getElementsByTagName("port").item(0).setTextContent(port+"");
+        getOrCreateChildElement(getCommsServerElement(), "port").setTextContent(port+"");
     }
 
 

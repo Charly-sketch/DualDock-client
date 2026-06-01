@@ -329,38 +329,104 @@ public class Controller extends Base
 
     private void hardwareKVMswitch()
     {
-        try
+        runHardwareKVMSwitchScriptAsync();
+
+        if (getConfig() != null)
         {
-            System.out.println("Executing hardware KVM switch script...");
+            String primaryHost = getConfig().getSavedServerHostNameOrIP();
+            int primaryPort = getConfig().getSavedServerPort();
+            String secondaryHost = getConfig().getSavedServerHostNameOrIP2();
+            int secondaryPort = getConfig().getSavedServerPort2();
 
-            ProcessBuilder pb = new ProcessBuilder(
-                "python3",
-                "/home/admin/led.py"
-            );
-
-            pb.redirectErrorStream(true);
-
-            Process process = pb.start();
-
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream())))
+            if (!secondaryHost.isBlank())
             {
-                String line;
-                while ((line = reader.readLine()) != null)
+                String targetHost;
+                int targetPort;
+
+                if (isConnected() && client != null)
                 {
-                    System.out.println("PYTHON: " + line);
+                    String currentHost = client.getServerIP();
+                    int currentPort = client.getServerPort();
+
+                    if (currentHost.equals(secondaryHost) && currentPort == secondaryPort && !primaryHost.isBlank())
+                    {
+                        targetHost = primaryHost;
+                        targetPort = primaryPort;
+                    }
+                    else
+                    {
+                        targetHost = secondaryHost;
+                        targetPort = secondaryPort > 0 ? secondaryPort : primaryPort;
+                    }
+
+                    try
+                    {
+                        client.disconnect();
+                    }
+                    catch (SevereException e)
+                    {
+                        handleSevereException(e);
+                    }
+                }
+                else
+                {
+                    targetHost = secondaryHost;
+                    targetPort = secondaryPort > 0 ? secondaryPort : primaryPort;
+                }
+
+                if (!targetHost.isBlank() && targetPort > 0)
+                {
+                    System.out.println("Switching connection to " + targetHost + ":" + targetPort);
+                    setupClientConnection(targetHost, targetPort);
+                }
+                else
+                {
+                    System.out.println("Cannot switch because the target host or port is not configured.");
                 }
             }
-
-            int exitCode = process.waitFor();
-            System.out.println("Script exécuté avec code : " + exitCode);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+            else
+            {
+                System.out.println("No secondary server host configured. Add one in settings to enable KVM switch.");
+            }
         }
 
         System.out.println("hardwareKVMswitch appelé");
+    }
+
+    private void runHardwareKVMSwitchScriptAsync()
+    {
+        ClientExecutorService.getExecutorService().submit(() -> {
+            try
+            {
+                System.out.println("Executing hardware KVM switch script...");
+
+                ProcessBuilder pb = new ProcessBuilder(
+                    "python3",
+                    "/home/admin/led.py"
+                );
+
+                pb.redirectErrorStream(true);
+
+                Process process = pb.start();
+
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(process.getInputStream())))
+                {
+                    String line;
+                    while ((line = reader.readLine()) != null)
+                    {
+                        System.out.println("PYTHON: " + line);
+                    }
+                }
+
+                int exitCode = process.waitFor();
+                System.out.println("Script exécuté avec code : " + exitCode);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
@@ -368,6 +434,14 @@ public class Controller extends Base
     {
         System.out.println("setupClientConnection appelé");
         setupClientConnection(null);
+    }
+
+    public synchronized void setupClientConnection(String host, int port)
+    {
+        if(isConnecting()) //probably already connecting
+            return;
+
+        client = new Client(host, port, this, this, null);
     }
 
     @Override

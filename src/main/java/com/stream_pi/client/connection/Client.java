@@ -78,6 +78,16 @@ public class Client extends Thread
 
     private Logger logger;
 
+    public String getServerIP()
+    {
+        return serverIP;
+    }
+
+    public int getServerPort()
+    {
+        return serverPort;
+    }
+
     private Runnable onConnectAndSetupToBeRun;
 
     public Client(String serverIP, int serverPort, ClientListener clientListener,
